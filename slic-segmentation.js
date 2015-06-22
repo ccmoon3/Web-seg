@@ -460,42 +460,32 @@
   }
 
   // When image is loaded.
-  function onSuccessImageLoad(imageData, options) {
-  /*  var canvas = document.createElement('canvas');
+  function onSuccessImageLoad(image, options) {
+    var canvas = document.createElement('canvas');
     canvas.width = image.width;
     canvas.height = image.height;
     var context = canvas.getContext('2d');
     context.drawImage(image, 0, 0);
-    var imageData = context.getImageData(0, 0, image.width, image.height),*/
-     var   segmentation = computeSegmentation(imageData, options);
+    var imageData = context.getImageData(0, 0, image.width, image.height),
+        segmentation = computeSegmentation(imageData, options);
   }
 
   // When image is invalid.
   function onErrorImageLoad() {
-    alert('Failed to load an image: ' + image.src);
+    alert('Failed to load an image: '+image.src);
   }
 
   // Public API.
-  window.SLICSegmentation = function(imageData, options) {
+  window.SLICSegmentation = function(image, options) {
     if (typeof options === 'undefined') options = {};
     // the lateral side of a rectangle superpixel in pixels.
     if (options.regionSize === undefined) options.regionSize = 40;
     // width or high should be larger than 20 pixels
     if (options.minRegionSize === undefined)
       options.minRegionSize = options.regionSize * options.regionSize / 4;
- //   var image = new Image();
- //   image.src = imageURL;
- //   image.crossOrigin = null;
 
-  //  image.onerror = function() { onErrorImageLoad(image); };
-   // image.onload = function() { 
-    /*  var canvas = document.createElement('canvas');
-      canvas.width = image.width;
-      canvas.height = image.height;
-      var context = canvas.getContext('2d');
-      context.drawImage(image, 0, 0);
-      var imageData = context.getImageData(0, 0, image.width, image.height);*/
-      onSuccessImageLoad(imageData, options); 
- //   };
+
+    image.onerror = function() { onErrorImageLoad(image); };
+    image.onload = function() { onSuccessImageLoad(image, options); };
   };
 }).call(this);

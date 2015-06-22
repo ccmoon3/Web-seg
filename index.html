@@ -88,17 +88,17 @@
     window.onload = function() {
       var image = new Image();
       image.src = 'example.png';
-     // image.crossOrigin = null;
+      image.crossOrigin = null;
 
-      var canvas = document.createElement('canvas');
+   /*   var canvas = document.createElement('canvas');
       canvas.width = image.width;
       canvas.height = image.height;
       var context = canvas.getContext('2d');
       context.drawImage(image, 0, 0);
-      var imageData = context.getImageData(0, 0, image.width, image.height);
+      var imageData = context.getImageData(0, 0, image.width, image.height);*/
 
-      var regSize = 30;
-      new SLICSegmentAnnotator(imageData, {
+      var regSize = 150;
+      new SLICSegmentAnnotator(image, {
         regionSize: regSize,
         container: document.getElementById('annotator-container'),
         // annotation: 'annotation.png' // optional existing annotation data.
@@ -267,7 +267,7 @@
         });
 
         document.getElementById('subSegement-button').addEventListener('click', function() {
-  
+  /*
     var data = imageData.data;
     var pixels = annotator.getPixelsIndex(1);
             var cvs = document.getElementById('part');
@@ -303,7 +303,7 @@
       });
 
  //    computeSegmentation(imPartData,{regionSize: 50});
-//           ctx.putImageData(imPartData,0,0); 
+//           ctx.putImageData(imPartData,0,0); */
         });
 
     
