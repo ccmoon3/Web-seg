@@ -421,10 +421,46 @@
     }
     return index;
   }
+  //row=i*width, col=j
+  function createIndexMap(index, data, pixelsMap, row, col, width, height){
+    var k = row+col;
+    pixelsMap[index].push(k);
+    if (data[k+0]===0 && data[k+1]===255 && data[k+2]===0){
+      //come to border;
+    }
+    else{
+      if (i+1<height)
+         createIndexMap (index, data, pixelsMap, (i+1)*width, j, width, height);
+      if (j+1<width)
+         createIndexMap (index, data, pixelsMap, i*width, j+1, width, height);
+    }
+    createIndexMap(++index, data, pixelsMap, row, col, width, height);
+  }
 
   // Compute segmentation.
-  window.computeSegmentation = function(imageData, options) {
- // function computeSegmentation(imageData, options) {
+  // segments= 1000 size
+  function computeSegmentation(imageData, options) {
+    var data = imageData.data;
+    var width = imageData.width;
+    var height = imageData.height;
+    var segments = 1000;
+    var pixelsMap = new Array(segments);
+    
+    for (i = 0; i < segments; ++i)
+        pixelsMap[i] = [];
+
+     return this;
+    for (var i =0;i<width-1; i++){
+      for(var j=0;j<height-1; j++){
+     //   if (createIndexMap (data, i*width,j);
+        
+      }
+    }
+    window.pixelsMap = pixelsMap;
+
+
+
+
     var segmentation = computeSLICSegmentation(imageData, options),
         numSegments = remapLabels(segmentation);
     if (options.callback) {
@@ -466,8 +502,8 @@
     canvas.height = image.height;
     var context = canvas.getContext('2d');
     context.drawImage(image, 0, 0);
-    var imageData = context.getImageData(0, 0, image.width, image.height),
-        segmentation = computeSegmentation(imageData, options);
+    var imageData = context.getImageData(0, 0, image.width, image.height);
+      //  segmentation = computeSegmentation(imageData, options);
   }
 
   // When image is invalid.
@@ -476,7 +512,7 @@
   }
 
   // Public API.
-  window.SLICSegmentation = function(image, options) {
+  window.SLICSegmentation = function(imageURL, options) {
     if (typeof options === 'undefined') options = {};
     // the lateral side of a rectangle superpixel in pixels.
     if (options.regionSize === undefined) options.regionSize = 40;
@@ -484,7 +520,9 @@
     if (options.minRegionSize === undefined)
       options.minRegionSize = options.regionSize * options.regionSize / 4;
 
-
+    var image = new Image();
+    image.src = imageURL;
+    image.crossOrigin = null;
     image.onerror = function() { onErrorImageLoad(image); };
     image.onload = function() { onSuccessImageLoad(image, options); };
   };
