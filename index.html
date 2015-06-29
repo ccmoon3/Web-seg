@@ -80,13 +80,13 @@
 </head>
 <body>
   <div style="white-space:nowrap;">
-    <div id="annotator-container"></div>
     <canvas id="label" ></canvas>
     <div style="display:inline-block;vertical-align:top;padding:0 1em;">
       <p>Mode</p>
       <div id="mode" class="mode"></div><br /> 
       <div id="legend" class="legend"></div>
-      <button id="undo-button" type="button">Undo</button> 
+      <button id="undo-button" type="button">Undo</button>
+      <button id="redo-button" type="button">Redo</button> 
       <p>Views</p>
       <div>
         <div id="boundary-view-button" class="toggle-button">Boundary</div><br />
@@ -110,6 +110,7 @@
       //loading label
          var img = new Image();
          window.labelColor, window.modeIndex;
+         window.pushArray = new Array(), window.step = -1;
          img.onload = function() {
                 var canvas = document.getElementById('label');
                 canvas.width = img.width;
@@ -130,17 +131,23 @@
                 initializeMode(mode);
                 initializeButtons(); 
 
-                loadImage('test_s.png',function(imgData){
+                loadImage('test_s.png',function(imgData, canvas){
                   window.Subseg_imgData = imgData;
+                  window.sub_canvas = canvas;
                 }); 
-                loadImage('test_o.png',function(imgData){
+                loadImage('test_o.png',function(imgData, canvas){
                   window.ori_imgData = imgData;
+                  window.ori_canvas = canvas;
                 }); 
-                loadImage('test_b.png',function(imgData){
+                loadImage('test_b.png',function(imgData, canvas){
                   window.border_imgData = imgData;
+                  window.bor_canvas = canvas;
+                  push();
                 }); 
+
          }
          img.src = 'test_l.png';
+
 
          
        function loadImage(url, callback) {     
@@ -152,15 +159,26 @@
                 var context = canvas.getContext('2d');
                 context.drawImage(img, 0, 0);
                 var imgData = context.getImageData(0, 0, img.width, img.height);  
-                callback(imgData);
+                callback(imgData, canvas);
             }
             img.src = url; 
         }
 
+        function push() {
+
+            var data = {label:'', border:''};
+            step++;
+            if (step < pushArray.length) { pushArray.length = step; }
+            data.label = document.getElementById('label').toDataURL();
+            data.border = bor_canvas.toDataURL();
+            pushArray.push(data);
+            console.log("push:" +step);
+         }
+
       var container = document.getElementById('label');
       container.addEventListener("click", function(event) {
              var hit = [];
-             if(modeIndex===0){
+             if(modeIndex!==1){
                 hit.push(getClickPosition(event, this));
                 getSegmentPixels(hit);             
              }
@@ -201,6 +219,8 @@
              if(!isBorder(hit.x, hit.y, label_imgData)){
                points.push(hit);
              }
+
+             if(modeIndex==1)
             getSegmentPixels(points);
 
        //      console.log('Up:   '+hit.x+','+hit.y);
@@ -328,13 +348,15 @@
              var k=3;
              var dilatePixels = dilateK(k, img.width, img.height, indexMap);
              erosionK(dilatePixels, pixels, -k, img.width, img.height, indexMap);
-             labelSegment(pixels); 
+             mergeSegment(pixels); 
              break;
            //split  
            case 2:
              splitSegement(pixels);
              break;
          }
+         push();
+
          return pixels;
       }
       
@@ -360,6 +382,7 @@
 
 
       function splitSegement(segPixels){
+
              for(var i = 0; i < segPixels.length; i++){
                  copyPixelColor(Subseg_imgData, label_imgData, segPixels[i]);
                  copyPixelColor(Subseg_imgData, border_imgData, segPixels[i]);
@@ -368,17 +391,20 @@
 
       }
 
-      function labelSegment(segPixels){
+      function mergeSegment(segPixels){
 
-         if (modeIndex===1){
-           for(var i=0; i<segPixels.length; i++){
+            for(var i=0; i<segPixels.length; i++){
                  copyPixelColor(ori_imgData, label_imgData, segPixels[i]);
                  copyPixelColor(ori_imgData, border_imgData, segPixels[i]);
-            }  
-         }
-         else if(labelColor.name =='Clear label'){
+            }   
+            context.putImageData(label_imgData,0,0);       
+      }
+
+      function labelSegment(segPixels){
+
+         if(labelColor.name =='Clear label'){
             for(var i=0; i<segPixels.length; i++){
-                 copyPixelColor(border_imgData, label_imgData, segPixels[i]);
+                 copyPixelColor(ori_imgData, label_imgData, segPixels[i]);
             }         
          }
          else{
@@ -641,6 +667,45 @@
           var dataURL = 'data:application/json;charset=utf-8,' +
                         encodeURIComponent(JSON.stringify(data));
           downloadAsFile(dataURL, 'export.json');
+        });
+
+        document.getElementById('undo-button').addEventListener('click', function() {
+
+            if (step > 0) {
+              step--;
+
+              var undoLable = new Image();
+              undoLable.onload = function(){
+                context.drawImage(undoLable, 0, 0); 
+                label_imgData = context.getImageData(0, 0, undoLable.width, undoLable.height);              
+              }
+              undoLable.src = pushArray[step].label;
+
+              loadImage(pushArray[step].border, function(imgData, canvas){
+                  border_imgData = imgData;
+                  bor_canvas = canvas;
+              })
+
+            }
+        });
+
+        document.getElementById('redo-button').addEventListener('click', function() {
+
+             if (step < pushArray.length-1) {
+                step++;
+
+                var redoLable = new Image();
+                redoLable.onload = function(){                
+                  context.drawImage(redoLable, 0, 0); 
+                  label_imgData = context.getImageData(0, 0, redoLable.width, redoLable.height);
+                }
+                redoLable.src = pushArray[step].label;
+
+                loadImage(pushArray[step].border, function(imgData, canvas){
+                    border_imgData = imgData;
+                    bor_canvas = canvas;
+                })
+             }
         });
       }
 //    }
