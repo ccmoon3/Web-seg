@@ -89,15 +89,13 @@
       <button id="undo-button" type="button">Undo</button> 
       <p>Views</p>
       <div>
-        <div id="image-view-button" class="toggle-button">Image</div><br />
         <div id="boundary-view-button" class="toggle-button">Boundary</div><br />
         <div id="fill-view-button" class="toggle-button">Fill</div>
       </div>
-      <p>Mode</p>
+      <p>Source</p>
       <div>
-        <div id="import-button" class="toggle-button">Import</div><br />
-        <div id="unlabel-button" class="toggle-button">Merge</div>
-        <div id="export-button" class="toggle-button">Export</div>
+        <div id="Open-button" class="toggle-button">Open</div><br />
+        <div id="Save-button" class="toggle-button">Save</div>
       </div>
     </div>
         <canvas id="part" ></canvas>
@@ -108,8 +106,6 @@
 //test_l: border && part labels
 //test_s: only with all Subsegment border
    // window.onload = function() {
-
-
 
       //loading label
          var img = new Image();
@@ -124,8 +120,8 @@
                 context.putImageData(label_imgData,0,0);
               
                 var labels =[
-                  {  name: 'Sky', color: [0, 0, 255]},
-                  {  name: 'Cloud', color: [255, 0, 0]},
+                  {  name: 'Sky', color: [0, 0, 194]},
+                  {  name: 'Cloud', color: [194, 0, 0]},
                   {  name: 'Clear label', color: [255, 255, 255]},
                 ];
                 initializeLegend(labels);
@@ -133,43 +129,33 @@
                 var mode = ['Label', 'Merge', 'Split'];
                 initializeMode(mode);
                 initializeButtons(); 
+
+                loadImage('test_s.png',function(imgData){
+                  window.Subseg_imgData = imgData;
+                }); 
+                loadImage('test_o.png',function(imgData){
+                  window.ori_imgData = imgData;
+                }); 
+                loadImage('test_b.png',function(imgData){
+                  window.border_imgData = imgData;
+                }); 
          }
          img.src = 'test_l.png';
 
-      //loading original
-         var imgOri = new Image();
-         imgOri.onload = function() {
+         
+       function loadImage(url, callback) {     
+            var img = new Image();    
+            img.onload = function(){
                 var canvas = document.createElement('canvas');
-                canvas.width = imgOri.width;
-                canvas.height = imgOri.height;
+                canvas.width = img.width;
+                canvas.height = img.height;
                 var context = canvas.getContext('2d');
-                context.drawImage(imgOri, 0, 0);
-                window.ori_imgData = context.getImageData(0, 0, imgOri.width, imgOri.height);    
-         }
-         imgOri.src = 'test_o.png';
-
-         var imgBorder = new Image();
-         imgBorder.onload = function() {
-                var canvas = document.createElement('canvas');
-                canvas.width = imgBorder.width;
-                canvas.height = imgBorder.height;
-                var context = canvas.getContext('2d');
-                context.drawImage(imgBorder, 0, 0);
-                window.border_imgData = context.getImageData(0, 0, imgBorder.width, imgBorder.height);       
-         }
-         imgBorder.src = 'test_b.png';
-
-
-         var imgSubseg = new Image();
-         imgSubseg.onload = function() {
-                var canvas = document.createElement('canvas');
-                canvas.width = imgSubseg.width;
-                canvas.height = imgSubseg.height;
-                var context = canvas.getContext('2d');
-                context.drawImage(imgSubseg, 0, 0);
-                window.Subseg_imgData = context.getImageData(0, 0, imgSubseg.width, imgSubseg.height);       
-         }
-         imgSubseg.src = 'test_s.png';
+                context.drawImage(img, 0, 0);
+                var imgData = context.getImageData(0, 0, img.width, img.height);  
+                callback(imgData);
+            }
+            img.src = url; 
+        }
 
       var container = document.getElementById('label');
       container.addEventListener("click", function(event) {
@@ -208,11 +194,11 @@
              var hit = getClickPosition(event, this);
              var points = [];
              for(var i =0; i<route.length;i++){
-               if(isBorder(route[i].x, route[i].y)){
+               if(isBorder(route[i].x, route[i].y, label_imgData)){
                  points.push(route[i-1]);
                }
              }
-             if(!isBorder(hit.x, hit.y)){
+             if(!isBorder(hit.x, hit.y, label_imgData)){
                points.push(hit);
              }
             getSegmentPixels(points);
@@ -221,9 +207,9 @@
           }, false);
   //    }
 
-      function dilateK(k, width, height){
+      function dilateK(k, width, height, indexMap){
          var dilatePixels = [];
-         manhattanDilate(width, height);
+         manhattanDilate(width, height, indexMap);
 
          for (var y=0; y<height; y++){
              for (var x=0; x<width; x++){
@@ -240,7 +226,7 @@
           return dilatePixels;
       }
 
-      function manhattanDilate(width, height){
+      function manhattanDilate(width, height, indexMap){
 
            for (var y=0; y<height; y++){
                for (var x=0; x<width; x++){
@@ -263,7 +249,7 @@
      }
 
 
-     function manhattanErosion(width, height){
+     function manhattanErosion(width, height, indexMap){
 
            for (var y=0; y<height; y++){
                for (var x=0; x<width; x++){
@@ -286,11 +272,11 @@
      }     
 
 
-      function erosionK(dilatePixels, pixels, ng_k, width, height){
+      function erosionK(dilatePixels, pixels, ng_k, width, height, indexMap){
 
           var fake=[];
 
-          manhattanErosion(width, height);
+          manhattanErosion(width, height, indexMap);
 
           for(var i =0; i<dilatePixels.length;i++){
             if(indexMap[dilatePixels[i]] < ng_k){
@@ -299,15 +285,14 @@
             }
           }
 
-           drawPart(fake);
       }
 
 
 
-      function isBorder(x, y){
+      function isBorder(x, y, imgData){
         var k = y*img.width + x;
-        var data = label_imgData.data;
-        if(data[4*k+0]===0 && data[4*k+1]===255 && data[4*k+2]===0)
+
+        if(imgData.data[4*k+0]===0 && imgData.data[4*k+1]===255 && imgData.data[4*k+2]===0)
           return true;
         return false;
       }
@@ -324,13 +309,13 @@
       //indexMap: pixel index = true, if this pixel is added into pixels Array
       function getSegmentPixels(point){
          var pixels = [];
-         window.indexMap = new Array(img.width*img.height);
+         var indexMap = new Array(img.width*img.height);
          
          for(var i=0; i< img.width*img.height;++i)
                 indexMap[i] = 0;
          
          for(var i =0; i<point.length;i++)
-           getPixels(pixels, point[i].x, point[i].y,label_imgData.data,label_imgData.width, label_imgData.height);
+           getPixels(pixels, point[i].x, point[i].y,label_imgData.data, img.width, img.height, indexMap);
 
          switch(modeIndex){
           //label
@@ -341,8 +326,8 @@
            //k and ad can be further adjusted
            case 1: 
              var k=3;
-             var dilatePixels = dilateK(k, img.width, img.height);
-             erosionK(dilatePixels, pixels, -k, img.width, img.height);
+             var dilatePixels = dilateK(k, img.width, img.height, indexMap);
+             erosionK(dilatePixels, pixels, -k, img.width, img.height, indexMap);
              labelSegment(pixels); 
              break;
            //split  
@@ -353,7 +338,7 @@
          return pixels;
       }
       
-
+/*
      function drawPart(pixels){
 
                    var cvs = document.getElementById('part');
@@ -371,15 +356,13 @@
                   }
 
                   ctx.putImageData(imPartData,0,0);     
-     }
+     }*/
 
 
       function splitSegement(segPixels){
              for(var i = 0; i < segPixels.length; i++){
-                 label_imgData.data[4*segPixels[i]+0] = Subseg_imgData.data[4*segPixels[i]+0];
-                 label_imgData.data[4*segPixels[i]+1] = Subseg_imgData.data[4*segPixels[i]+1];
-                 label_imgData.data[4*segPixels[i]+2] = Subseg_imgData.data[4*segPixels[i]+2];
-                 label_imgData.data[4*segPixels[i]+3] = Subseg_imgData.data[4*segPixels[i]+3];
+                 copyPixelColor(Subseg_imgData, label_imgData, segPixels[i]);
+                 copyPixelColor(Subseg_imgData, border_imgData, segPixels[i]);
              }  
              context.putImageData(label_imgData,0,0);    
 
@@ -389,51 +372,108 @@
 
          if (modeIndex===1){
            for(var i=0; i<segPixels.length; i++){
-                 label_imgData.data[4*segPixels[i]+0] = ori_imgData.data[4*segPixels[i]+0];
-                 label_imgData.data[4*segPixels[i]+1] = ori_imgData.data[4*segPixels[i]+1];
-                 label_imgData.data[4*segPixels[i]+2] = ori_imgData.data[4*segPixels[i]+2];
-                 label_imgData.data[4*segPixels[i]+3] = ori_imgData.data[4*segPixels[i]+3];
-
-                 border_imgData.data[4*segPixels[i]+0] = ori_imgData.data[4*segPixels[i]+0];
-                 border_imgData.data[4*segPixels[i]+1] = ori_imgData.data[4*segPixels[i]+1];
-                 border_imgData.data[4*segPixels[i]+2] = ori_imgData.data[4*segPixels[i]+2];
-                 border_imgData.data[4*segPixels[i]+3] = ori_imgData.data[4*segPixels[i]+3];
+                 copyPixelColor(ori_imgData, label_imgData, segPixels[i]);
+                 copyPixelColor(ori_imgData, border_imgData, segPixels[i]);
             }  
          }
          else if(labelColor.name =='Clear label'){
             for(var i=0; i<segPixels.length; i++){
-                 label_imgData.data[4*segPixels[i]+0] = border_imgData.data[4*segPixels[i]+0];
-                 label_imgData.data[4*segPixels[i]+1] = border_imgData.data[4*segPixels[i]+1];
-                 label_imgData.data[4*segPixels[i]+2] = border_imgData.data[4*segPixels[i]+2];
-                 label_imgData.data[4*segPixels[i]+3] = border_imgData.data[4*segPixels[i]+3];
+                 copyPixelColor(border_imgData, label_imgData, segPixels[i]);
             }         
          }
          else{
              for(var i = 0; i < segPixels.length; i++){
-                 label_imgData.data[4*segPixels[i]+0] = labelColor.color[0];
-                 label_imgData.data[4*segPixels[i]+1] = labelColor.color[1];
-                 label_imgData.data[4*segPixels[i]+2] = labelColor.color[2];
-                 label_imgData.data[4*segPixels[i]+3] = 255;
+                 setPixelLabelColor(labelColor.color, label_imgData, segPixels[i]);
              }   
          }
          context.putImageData(label_imgData,0,0); 
       }
       
+
+      function copyPixelColor(copyData, pasteData, k){
+        pasteData.data[ 4*k+0] = copyData.data[4*k+0];
+        pasteData.data[ 4*k+1] = copyData.data[4*k+1];
+        pasteData.data[ 4*k+2] = copyData.data[4*k+2];
+        pasteData.data[ 4*k+3] = copyData.data[4*k+3];
+      }
+
+      function setPixelLabelColor(color, imgData, k){
+        imgData.data[4*k+0] = color[0];
+        imgData.data[4*k+1] = color[1];
+        imgData.data[4*k+2] = color[2];
+        imgData.data[4*k+3] = 255;
+      }
+
+      function boundaryEnabled(width, height){
+        var colorMap = new Array(width * height), 
+            noBoundary_imgData = context.getImageData(0, 0, img.width, img.height),
+            redPixels,
+            bluePixels,       
+            k;
+                  
+            noBoundary_imgData.data = label_imgData.data;
+
+            //expand blue
+            for (var y =0; y< height; y++){
+               for (var x =0; x<width; x++){
+                    k = y*width+x;
+                    if(label_imgData.data[4*k+0]===0 && label_imgData.data[4*k+1]===0 && label_imgData.data[4*k+2]>180){
+                       colorMap[k]=1;
+                    }
+                    else
+                       colorMap[k]=0;
+                }
+             }
+             bluePixels = dilateK(2, width, height, colorMap);
+
+             for (var i=0;i<bluePixels.length;i++)
+                setPixelLabelColor([0,0,194], noBoundary_imgData, bluePixels[i]);
+  
+             //expand red
+             for (var y =0; y< height; y++){
+                for (var x =0; x<width; x++){
+                  k = y*width+x;
+                  if(label_imgData.data[4*k+0]>180 && label_imgData.data[4*k+1]===0 && label_imgData.data[4*k+2]===0){
+                       colorMap[k]=1;
+                  }
+                  else
+                       colorMap[k]=0;
+                  }
+             }
+             redPixels = dilateK(2, width, height, colorMap);   
+             for (var i=0;i<redPixels.length;i++)
+                setPixelLabelColor([194,0,0], noBoundary_imgData, redPixels[i]);
+
+             //rest green border
+             for (var y =0; y< height; y++){
+                for (var x =0; x<width; x++){
+                   if(isBorder(x,y, noBoundary_imgData)){
+                      k = y*width+x;
+                      copyPixelColor(ori_imgData, noBoundary_imgData, k);
+                   }
+                }
+              }
+
+            context.putImageData(noBoundary_imgData,0,0); 
+ 
+      }
+ 
+
       //green border pixels never added into pixels array
-     function getPixels(pixels, x, y, data, width, height){
+     function getPixels(pixels, x, y, data, width, height, indexMap){
         var k = y*width + x;
-        if (!indexMap[k] && !(data[4*k+0]===0 && data[4*k+1]===255 && data[4*k+2]===0)){
+        if (!indexMap[k] && !(isBorder(x, y, label_imgData))){
      
           pixels.push(k);
           indexMap[k]=1;
           if(x-1>0)
-            getPixels(pixels, x-1, y, data, width, height);
+            getPixels(pixels, x-1, y, data, width, height, indexMap);
           if(x+1<height)
-            getPixels(pixels, x+1, y, data, width, height);
+            getPixels(pixels, x+1, y, data, width, height, indexMap);
           if(y-1>0)
-            getPixels(pixels, x, y-1, data, width, height);
+            getPixels(pixels, x, y-1, data, width, height, indexMap);
           if(y+1<width)
-            getPixels(pixels, x, y+1, data, width, height);
+            getPixels(pixels, x, y+1, data, width, height, indexMap);
         }
       }
       
@@ -494,38 +534,6 @@
         document.getElementsByClassName('legend-item')[currentIndex].click();
       }
 
-      function mergeSort(array) {
-          function sort(array, first, last) {
-              first = (first === undefined) ? 0 : first
-              last = (last === undefined) ? array.length - 1 : last
-              if (last - first < 1) {
-                  return;
-              }
-              var middle = Math.floor((first + last) / 2);
-              sort(array, first, middle);
-              sort(array, middle + 1, last);
-
-              var f = first,
-                  m = middle,
-                  i,
-                  temp;
-
-              while (f <= m && m + 1 <= last) {
-                  if (array[f] >= array[m + 1]) { // 这里使用了插入排序的思想
-                      temp = array[m + 1];
-                      for (i = m; i >= f; i--) {
-                          array[i + 1] = array[i];
-                      }
-                      array[f] = temp;
-                      m++;
-                  } else {
-                      f++;
-                  }
-              } 
-            return array;
-          }
-          return sort(array);
-      }
 
       // Create a slide radio input.
       function createToggleButton(button, disableCallback, enableCallback) {
@@ -568,39 +576,20 @@
       };
       // Attach button events.
       function initializeButtons(annotator) {
-        var fillAlpha = 192;
-        var boundaryEnabled = true;
-        createToggleButton(document.getElementById('image-view-button'),
-                           function() { annotator.setImageAlpha(0); },
-                           function() { annotator.setImageAlpha(255); });
 
         createToggleButton(document.getElementById('boundary-view-button'), function() {
-          annotator.setBoundaryAlpha(fillAlpha);
-          if (boundaryEnabled)
-            annotator.setBoundaryAlpha(0);
-          boundaryEnabled = !boundaryEnabled;
+            boundaryEnabled(img.width, img.height);
         }, function() {
-          if (!boundaryEnabled)
-            annotator.setBoundaryAlpha(192);
-          boundaryEnabled = !boundaryEnabled;
+            context.putImageData(label_imgData,0,0);
         });
 
         createToggleButton(document.getElementById('fill-view-button'), function() {
-         // fillAlpha = 0;
-         // annotator.setFillAlpha(fillAlpha);
-         // annotator.setBoundaryAlpha(192);
           context.putImageData(border_imgData,0,0); 
         }, function() {
-        /*  fillAlpha = 128;
-          annotator.setFillAlpha(fillAlpha);
-          if (boundaryEnabled)
-            annotator.setBoundaryAlpha(192);
-          else
-            annotator.setBoundaryAlpha(fillAlpha);*/
           context.putImageData(label_imgData,0,0);
         });
         // Set up json importer.
-        createFileInput(document.getElementById('import-button'), function(file) {
+        createFileInput(document.getElementById('Open-button'), function(file) {
           if (file.type === 'application/json') {
             var reader = new FileReader();
             reader.onload = function(event) {
@@ -612,7 +601,7 @@
             reader.readAsText(file);
           }
         });
-    
+    /*
         document.getElementById('unlabel-button').addEventListener('click', function() {
          var img = new Image();
          img.src = 'test_o.png';
@@ -642,9 +631,9 @@
                   ctx.putImageData(imPartData,0,0); 
          }
         });
-
+*/
     
-        document.getElementById('export-button').addEventListener('click', function() {
+        document.getElementById('Save-button').addEventListener('click', function() {
           var data = {
             labels: annotator.getLabels(),
             annotation: annotator.getAnnotation()
