@@ -132,6 +132,7 @@
          //modeIndex: 0=split, 1=merge, 2=label
          window.labelColor, window.modeIndex;
          window.pushArray = new Array(), window.step = -1;
+         window.mergeArray = new Array();
          img.onload = function() {
                 var canvas = document.getElementById('label');
                 canvas.width = img.width;
@@ -143,7 +144,7 @@
               
                 var labels =[
                   {  name: 'Sky', color: [0, 0, 225]},
-                  {  name: 'Cloud', color: [225, 0, 0]},
+                  {  name: 'Cloud', color: [210, 0, 0]},
                   {  name: 'Clear label', color: [255, 255, 255]},
                 ];
             //    initializeLegend(labels);
@@ -227,19 +228,23 @@
 
         function store() {
 
-            var data = {label:'', border:''};
+            var data = {label:'', border:'', merge:[]};
             step++;
             if (step < pushArray.length) { pushArray.length = step; }
             data.label = document.getElementById('label').toDataURL();
             data.border = bor_canvas.toDataURL();
+            data.merge = mergeArray.splice();
             pushArray.push(data);
+
             if(step > 0)
-              document.getElementById('undo-button').disabled = false;
+               document.getElementById('undo-button').disabled = false;
+            if(step === pushArray.length-1)
+               document.getElementById('redo-button').disabled = true;
          }
 
 
       function initializeContainListener(){
-          var route, preHit, point, mousedown=false;
+          var route, preHit, point, mousedown = false;
 
          //modeIndex: 0=split, 1=merge, 2=label
           var container = document.getElementById('label');
@@ -249,7 +254,7 @@
                  mousedown = true;
                  route = [];
                  preHit = getClickPosition(event, this);
-        //         console.log("start:"+preHit.x+','+preHit.y);
+                 route.push(preHit);
               }
           }, false);
           
@@ -274,12 +279,10 @@
                  if(!isBorder(hit.x, hit.y, label_imgData)){
                    points.push(hit);
                  }
-       //          console.log(points);
              }
              else{
                points.push(hit);
              }
-          //   console.log("end:"+hit.x+','+hit.y);
 
              mousedown = false;
              getSegmentPixels(points);
@@ -371,7 +374,7 @@
           manhattanErosion(width, height, indexMap);
 
           for(var i =0; i<dilatePixels.length;i++){
-            if(indexMap[dilatePixels[i]] < ng_k){
+            if(indexMap[dilatePixels[i]] < ng_k && dilatePixels[i]>width && dilatePixels[i]<(height-1)*width && dilatePixels[i]%width!=0 && (dilatePixels[i]+1)%width!=0){
               pixels.push(dilatePixels[i]);
             }
           }
@@ -399,17 +402,50 @@
 
       //indexMap: pixel index = true, if this pixel is added into pixels Array
       function getSegmentPixels(point){
-         var pixels = [];
+         var pixels = [], 
+             k,
+             mergeSegment = {state:'', no:''};
          var indexMap = new Array(img.width*img.height);
          
          for(var i=0; i< img.width*img.height;++i)
                 indexMap[i] = 0;
          
-         for(var i =0; i<point.length;i++)
-           getPixels(pixels, point[i].x, point[i].y,label_imgData.data, img.width, img.height, indexMap);
+         for(var i =0; i<point.length;i++){
+            k = img.width*point[i].y + point[i].x;
+            mergeSegment.state = false;
 
-         switch(modeIndex){
-          //label
+            for(var n=0; n<mergeArray.length; n++){
+               for(var m=0; m<mergeArray[n].length; m++){
+
+                  if(k===mergeArray[n][m]){
+                    mergeSegment.state = true;
+                    mergeSegment.no = n;
+                    break;
+                  }
+               }
+               if(mergeSegment.state)break;
+            }
+
+            if(mergeSegment.state){
+               for(var t=0; t<mergeArray[mergeSegment.no].length; t++){
+                  pixels.push(mergeArray[mergeSegment.no][t]);
+                  indexMap[mergeArray[mergeSegment.no][t]] = 1;
+               }
+               mergeArray.splice(mergeSegment.no, 1);
+            }
+            else{
+              getPixels(pixels, point[i].x, point[i].y,label_imgData.data, img.width, img.height, indexMap);
+            }
+         }
+
+         updateSegments(pixels, indexMap);
+      }
+      
+
+
+      function updateSegments(pixels, indexMap){
+        switch(modeIndex){
+          //split
            case 0:
              splitSegement(pixels);
              break;
@@ -419,18 +455,37 @@
              var k=3;
              var dilatePixels = dilateK(k, img.width, img.height, indexMap);
              erosionK(dilatePixels, pixels, -k, img.width, img.height, indexMap);
+             mergeArray.push(pixels);
              mergeSegment(pixels); 
              break;
-           //split  
+           //label  
            case 2:
+             mergeArray.push(pixels);
              labelSegment(pixels);
              break;
          }
          store();
-
-         return pixels;
       }
-      
+
+
+
+      //green border pixels never added into pixels array
+      function getPixels(pixels, x, y, data, width, height, indexMap){
+        var k = y*width + x;
+        if (!indexMap[k] && !(isBorder(x, y, label_imgData))){
+     
+          pixels.push(k);
+          indexMap[k]=1;
+          if(x-1>0)
+            getPixels(pixels, x-1, y, data, width, height, indexMap);
+          if(x+1<height)
+            getPixels(pixels, x+1, y, data, width, height, indexMap);
+          if(y-1>0)
+            getPixels(pixels, x, y-1, data, width, height, indexMap);
+          if(y+1<width)
+            getPixels(pixels, x, y+1, data, width, height, indexMap);
+        }
+      }
 /*
      function drawPart(pixels){
 
@@ -483,7 +538,7 @@
                  copyPixelColor(ori_imgData, label_imgData, segPixels[i]);
                  copyPixelColor(ori_imgData, border_imgData, segPixels[i]);
             }   
-            context.putImageData(label_imgData,0,0);       
+            context.putImageData(label_imgData,0,0);      
       }
 
       function labelSegment(segPixels){
@@ -568,24 +623,6 @@
             
       }
  
-
-      //green border pixels never added into pixels array
-     function getPixels(pixels, x, y, data, width, height, indexMap){
-        var k = y*width + x;
-        if (!indexMap[k] && !(isBorder(x, y, label_imgData))){
-     
-          pixels.push(k);
-          indexMap[k]=1;
-          if(x-1>0)
-            getPixels(pixels, x-1, y, data, width, height, indexMap);
-          if(x+1<height)
-            getPixels(pixels, x+1, y, data, width, height, indexMap);
-          if(y-1>0)
-            getPixels(pixels, x, y-1, data, width, height, indexMap);
-          if(y+1<width)
-            getPixels(pixels, x, y+1, data, width, height, indexMap);
-        }
-      }
       
 
 
@@ -716,6 +753,7 @@
                   border_imgData = imgData;
                   bor_canvas = canvas;
               })
+              mergeArray = pushArray[step].merge.splice();
 
               document.getElementById('redo-button').disabled = false;
               if(step===0)
@@ -739,6 +777,7 @@
                     border_imgData = imgData;
                     bor_canvas = canvas;
                 })
+                mergeArray = pushArray[step].merge.splice();
                 
                 document.getElementById('undo-button').disabled = false;
                 if(step === pushArray.length-1)
