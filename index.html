@@ -293,14 +293,18 @@
       function haveBorderWithin(p, l, imgData){
           var x= p.x<=l.x ? 1:-1;
           var y= p.y<=l.y ? 1:-1;
-          for(var i=p.x; i!=l.x; i=i+x){
-            if(isBorder(i, p.y, imgData))
-               return true;
-          }
-          for(var j=p.y; j!=l.y;j=j+y){
-            if(isBorder(i, j, imgData))
-              return true;
-          }
+
+            for(var i=p.x; i!=l.x; i=i+x){
+              if(isBorder(i, p.y, imgData))
+                 return true;
+            }
+
+
+            for(var j=p.y; j!=l.y;j=j+y){
+              if(isBorder(i, j, imgData))
+                return true;
+            }
+
           return false;
       }
 
@@ -528,7 +532,8 @@
                  copyPixelColor(Subseg_imgData, label_imgData, segPixels[i]);
                  copyPixelColor(Subseg_imgData, border_imgData, segPixels[i]);
              }  
-             context.putImageData(label_imgData,0,0);    
+             context.putImageData(label_imgData,0,0);
+             bor_canvas.getContext('2d').putImageData(border_imgData,0,0);    
 
       }
 
@@ -538,7 +543,8 @@
                  copyPixelColor(ori_imgData, label_imgData, segPixels[i]);
                  copyPixelColor(ori_imgData, border_imgData, segPixels[i]);
             }   
-            context.putImageData(label_imgData,0,0);      
+            context.putImageData(label_imgData,0,0);  
+            bor_canvas.getContext('2d').putImageData(border_imgData,0,0);    
       }
 
       function labelSegment(segPixels){
@@ -753,6 +759,8 @@
                   border_imgData = imgData;
                   bor_canvas = canvas;
               })
+              for(var t=0;t<pushArray.length;t++)
+                  console.log(t+"undo:"+pushArray[step].border);
               mergeArray = pushArray[step].merge.splice();
 
               document.getElementById('redo-button').disabled = false;
