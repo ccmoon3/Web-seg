@@ -104,8 +104,8 @@
       <br>
       
       <div id="do-button" class="mode">
-      <button id="undo-button" type="button" class="my-button" disabled=''>Undo</button>
-      <button id="redo-button" type="button" class="my-button" disabled=''>Redo</button>
+      <button id="undo-button" type="button" class="my-button" >Undo</button>
+      <button id="redo-button" type="button" class="my-button" >Redo</button>
       </div>
       <br><br>
       <div id="view">
@@ -115,7 +115,8 @@
       </li>
       </div><br>
 
-      <button id="save-button" value="Save" type="button" class="my-button" style=" width: 10em;">Save</button>
+      <input id="save-button" type="button" value="Save" class="my-button" style="width:10em;"></input><br>
+      <input id="next-button" type="button" value="Next" class="my-button" style="width:10em;"></input>
 
     </div>
         <canvas id="part" ></canvas>
@@ -125,51 +126,80 @@
 //test_b: only with border
 //test_l: border && part labels
 //test_s: only with all Subsegment border
-   // window.onload = function() {
 
-      //loading label
-         var img = new Image();
+    window.onload = function(){
          //modeIndex: 0=split, 1=merge, 2=label
          window.labelColor, window.modeIndex;
-         window.pushArray = new Array(), window.step = -1;
-         window.mergeArray = new Array();
-         img.onload = function() {
-                var canvas = document.getElementById('label');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                window.context = canvas.getContext('2d');
-                context.drawImage(img, 0, 0);
-                window.label_imgData = context.getImageData(0, 0, img.width, img.height);       
-                context.putImageData(label_imgData,0,0);
-              
-                var labels =[
+         window.pushArray, window.step;
+         window.mergeArray;
+
+         window.context, window.bor_canvas;
+         window.label_imgData, window.Subseg_imgData, window.ori_imgData, window.border_imgData;
+
+         var labels =[
                   {  name: 'Sky', color: [0, 0, 225]},
                   {  name: 'Cloud', color: [210, 0, 0]},
                   {  name: 'Clear label', color: [255, 255, 255]},
                 ];
-            //    initializeLegend(labels);
+         initializeMode(labels);
+         //random select 2 images for each users from total 3 images.
+         var imageIndex = randomIndex(2, 3);
+         initializeButtons(imageIndex, 0); 
 
-                initializeMode(labels);
-                initializeContainListener();
-                initializeButtons(); 
+         initializeImages(imageIndex[0], function(width, height){
+          initializeContainListener(width, height);
+        });
+    }
 
-                loadImage('test_s.png',function(imgData, canvas){
-                  window.Subseg_imgData = imgData;
-                  window.sub_canvas = canvas;
+    function randomIndex(n, total){
+        var arr = [];
+        while(arr.length < n){
+           var randomNumber = Math.floor(Math.random()*total);
+           var found = false;
+           for(var i=0;i<arr.length;i++){
+              if(arr[i]==randomNumber){
+                found = true;
+                break}
+           }
+          if(!found)
+            arr.push(randomNumber);
+        }
+        return arr;
+    }
+
+    function initializeImages( i, callback){
+         var img = new Image();
+         document.getElementById('undo-button').disabled = true;
+         document.getElementById('redo-button').disabled = true;
+         document.getElementById('next-button').disabled = true;
+
+         pushArray = new Array(), step = -1;
+         mergeArray = new Array();
+
+         img.onload = function() {
+                var canvas = document.getElementById('label');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                context = canvas.getContext('2d');
+                context.drawImage(img, 0, 0);
+                label_imgData = context.getImageData(0, 0, img.width, img.height);       
+                context.putImageData(label_imgData,0,0);
+
+                loadImage( i+'/'+'test_s.png',function(imgData, canvas){
+                  Subseg_imgData = imgData;
                 }); 
-                loadImage('test_o.png',function(imgData, canvas){
-                  window.ori_imgData = imgData;
-                  window.ori_canvas = canvas;
+                loadImage( i+'/'+'test_o.png',function(imgData, canvas){
+                  ori_imgData = imgData;
                 }); 
-                loadImage('test_b.png',function(imgData, canvas){
-                  window.border_imgData = imgData;
-                  window.bor_canvas = canvas;
+                loadImage( i+'/'+'test_b.png',function(imgData, canvas){
+                  border_imgData = imgData;
+                  bor_canvas = canvas;
                   store();
                 }); 
-
+                callback(img.width, img.height);
          }
-         img.src = 'test_l.png';
-
+         img.src =  i+'/'+'test_l.png';
+      }
 
       //0:split, 1:merge, 2:blue, 3:cloud, 4:clear
       function initializeMode(labels){
@@ -243,7 +273,7 @@
          }
 
 
-      function initializeContainListener(){
+      function initializeContainListener(width, height){
           var route, preHit, point, mousedown = false;
 
          //modeIndex: 0=split, 1=merge, 2=label
@@ -271,19 +301,19 @@
 
              if(modeIndex===1){
                  for(var i =1; i<route.length;i++){
-                  if(haveBorderWithin(route[i-1], route[i], label_imgData)){
+                  if(haveBorderWithin(route[i-1], route[i], width, label_imgData)){
                      points.push(route[i-1]);
                    }
                  }
-                 if(!isBorder(hit.x, hit.y, label_imgData)){
+                 if(!isBorder(hit.x, hit.y, width, label_imgData)){
                    points.push(hit);
                  }
                  if(points.length>1)
-                  getSegmentPixels(points);
+                  getSegmentPixels(points, width, height);
              }
              else{
                points.push(hit);
-               getSegmentPixels(points);
+               getSegmentPixels(points, width, height);
              }
 
              mousedown = false;
@@ -291,18 +321,18 @@
           }, false);
       }
 
-      function haveBorderWithin(p, l, imgData){
+      function haveBorderWithin(p, l, width, data){
           var x= p.x<=l.x ? 1:-1;
           var y= p.y<=l.y ? 1:-1;
 
             for(var i=p.x+x; i!=l.x+x; i=i+x){
-              if(isBorder(i, p.y, imgData))
+              if(isBorder(i, p.y, width, data))
                  return true;
             }
 
 
             for(var j=p.y+y; j!=l.y+y;j=j+y){
-              if(isBorder(i, j, imgData))
+              if(isBorder(i, j,width,  data))
                 return true;
             }
 
@@ -390,12 +420,10 @@
 
       }
 
+      function isBorder(x, y, width, ImgData){
+        var k = y*width + x;
 
-
-      function isBorder(x, y, imgData){
-        var k = y*img.width + x;
-
-        if(imgData.data[4*k+0]===0 && imgData.data[4*k+1]===255 && imgData.data[4*k+2]===0)
+        if(ImgData.data[4*k+0]<50 && ImgData.data[4*k+1]>180 && ImgData.data[4*k+2]<50)
           return true;
         return false;
       }
@@ -410,17 +438,17 @@
       };     
 
       //indexMap: pixel index = true, if this pixel is added into pixels Array
-      function getSegmentPixels(point){
+      function getSegmentPixels(point, width, height){
          var pixels = [], 
              k,
              mergeSegment = {state:'', no:''};
-         var indexMap = new Array(img.width*img.height);
-         
-         for(var i=0; i< img.width*img.height;++i)
+         var indexMap = new Array(width*height);
+
+         for(var i=0; i< width*height;++i)
                 indexMap[i] = 0;
          
          for(var i =0; i<point.length;i++){
-            k = img.width*point[i].y + point[i].x;
+            k = width*point[i].y + point[i].x;
             mergeSegment.state = false;
 
             for(var n=0; n<mergeArray.length; n++){
@@ -443,16 +471,16 @@
                mergeArray.splice(mergeSegment.no, 1);
             }
             else{
-              getPixels(pixels, point[i].x, point[i].y,label_imgData.data, img.width, img.height, indexMap);
+              getPixels(pixels, point[i].x, point[i].y, label_imgData, width, height, indexMap);
             }
          }
 
-         updateSegments(pixels, indexMap);
+         updateSegments(pixels, width, height, indexMap);
       }
       
 
 
-      function updateSegments(pixels, indexMap){
+      function updateSegments(pixels, width, height,indexMap){
         switch(modeIndex){
           //split
            case 0:
@@ -462,8 +490,8 @@
            //k and ad can be further adjusted
            case 1:
              var k=3;
-             var dilatePixels = dilateK(k, img.width, img.height, indexMap);
-             erosionK(dilatePixels, pixels, -k, img.width, img.height, indexMap);
+             var dilatePixels = dilateK(k, width, height, indexMap);
+             erosionK(dilatePixels, pixels, -k, width, height, indexMap);
              mergeArray.push(pixels);
              mergeSegment(pixels); 
              break;
@@ -481,8 +509,9 @@
       //green border pixels never added into pixels array
       function getPixels(pixels, x, y, data, width, height, indexMap){
         var k = y*width + x;
-        if (!indexMap[k] && !(isBorder(x, y, label_imgData))){
-     
+
+        if (!indexMap[k] && !(isBorder(x, y, width, data))){
+
           pixels.push(k);
           indexMap[k]=1;
           if(x-1>0)
@@ -495,31 +524,24 @@
             getPixels(pixels, x, y+1, data, width, height, indexMap);
         }
       }
-/*
-     function drawPart(pixels){
+
+     function drawPart(imageData){
 
                    var cvs = document.getElementById('part');
-                   cvs.width = img.width;
-                   cvs.height = img.height;
+                   cvs.width = imageData.width;
+                   cvs.height = imageData.height;
                    var ctx = cvs.getContext('2d');
                    var imPartData = ctx.getImageData(0, 0, cvs.width, cvs.height);
-                   var data = label_imgData.data;
-
-                  for(var i = 0; i < pixels.length; i++){
-                        imPartData.data[4*pixels[i]+0] = data[4*pixels[i]+0];
-                        imPartData.data[4*pixels[i]+1] = data[4*pixels[i]+1];
-                        imPartData.data[4*pixels[i]+2] = data[4*pixels[i]+2];
-                        imPartData.data[4*pixels[i]+3] = data[4*pixels[i]+3];
-                  }
+                   imPartData.data.set(imageData.data);
 
                   ctx.putImageData(imPartData,0,0);     
-     }*/
+     }
 
       function saveImage(imgData){
 
                 var cvs = document.createElement("canvas");
-                cvs.width = img.width;
-                cvs.height = img.height;
+                cvs.width = imgData.width;
+                cvs.height = imgData.height;
                 var ctx = cvs.getContext('2d');
                 var imData = ctx.getImageData(0, 0, cvs.width, cvs.height);
                 imData.data.set(imgData.data);
@@ -584,7 +606,7 @@
 
       function boundaryEnabled(width, height){
         var colorMap = new Array(width * height), 
-            noBoundary_imgData = context.getImageData(0, 0, img.width, img.height),
+            noBoundary_imgData = context.getImageData(0, 0, width, height),
             redPixels =[],
             bluePixels =[],       
             k;
@@ -593,7 +615,7 @@
             for (var y =0; y< height; y++){
                for (var x =0; x<width; x++){
                     k = y*width+x;
-                    if(label_imgData.data[4*k+0]===0 && label_imgData.data[4*k+1]===0 && label_imgData.data[4*k+2]>180){
+                    if(label_imgData.data[4*k+0]<25 && label_imgData.data[4*k+1]<25 && label_imgData.data[4*k+2]>150){
                        colorMap[k]=1;
                     }
                     else
@@ -609,7 +631,7 @@
              for (var y =0; y< height; y++){
                 for (var x =0; x<width; x++){
                   k = y*width+x;
-                  if(label_imgData.data[4*k+0]>180 && label_imgData.data[4*k+1]===0 && label_imgData.data[4*k+2]===0){
+                  if(label_imgData.data[4*k+0]>150 && label_imgData.data[4*k+1]<25 && label_imgData.data[4*k+2]<25){
                        colorMap[k]=1;
                   }
                   else
@@ -624,8 +646,9 @@
              //rest green border
              for (var y =0; y< height; y++){
                 for (var x =0; x<width; x++){
-                   if(isBorder(x,y, noBoundary_imgData)){
+                   if(isBorder(x,y, width, noBoundary_imgData)){
                       k = y*width+x;
+                  //    console.log(noBoundary_imgData.data[4*k+0]+','+noBoundary_imgData.data[4*k+1]+','+noBoundary_imgData.data[4*k+2]);
                       copyPixelColor(ori_imgData, noBoundary_imgData, k);
                    }
                 }
@@ -634,59 +657,17 @@
             
       }
  
-      
-
-
-
-      // Create a slide radio input.
-   /*   function createToggleButton(button, disableCallback, enableCallback) {
-        var enabled = true;
-        button.addEventListener('click', function() {
-          if (enabled) {
-            disableCallback();
-            button.classList.add('toggle-button-disabled');
-            enabled = !enabled;
-          }
-          else {
-            enableCallback();
-            button.classList.remove('toggle-button-disabled');
-            enabled = !enabled;
-          }
-        });
-      }
-      // Create a local file input.
-    /*  function createFileInput(button, callback) {
-        var input = document.createElement('input');
-        input.type = 'file';
-        input.style.display = 'none';
-        document.getElementsByTagName('body')[0].appendChild(input);
-        input.addEventListener('change', function(event) {
-          callback(event.target.files[0]);
-        });
-        button.addEventListener('click', function() {
-          input.click();
-        });
-      }
-      // Download as a file.      
-      function downloadAsFile(url, filename) {
-        var anchor = document.createElement('a');
-        anchor.style.display = 'none';
-        document.body.appendChild(anchor);
-        anchor.setAttribute('href', url);
-        anchor.setAttribute('download', filename);
-        anchor.click();
-        document.body.removeChild(anchor);
-      };*/
 
       function handleClick(){
             var boundaryOn = document.getElementById('boundary-button').checked,
-                fillOn = document.getElementById('fill-button').checked;
+                fillOn = document.getElementById('fill-button').checked,
+                canvas = document.getElementById('label');
             if(boundaryOn && fillOn)
               context.putImageData(label_imgData,0,0);
             else if(boundaryOn) //fillOn = false
               context.putImageData(border_imgData,0,0);
             else if(fillOn)//boundaryOn = false
-              context.putImageData(boundaryEnabled(img.width, img.height),0,0); 
+              context.putImageData(boundaryEnabled(canvas.width, canvas.height),0,0); 
             else// false, false
               context.putImageData(ori_imgData, 0, 0);
       }
@@ -718,34 +699,35 @@
       }
 
       // Attach button events.
-      function initializeButtons() {
-        // Set up json importer.
-  /*      createFileInput(document.getElementById('Open-button'), function(file) {
-          if (file.type === 'application/json') {
-            var reader = new FileReader();
-            reader.onload = function(event) {
-              var data = JSON.parse(event.target.result);
-              annotator.setLabels(data.labels);
-              annotator.setAnnotation(data.annotation);
-              initializeLegend(annotator);
-            };
-            reader.readAsText(file);
-          }
-        });*/
+      function initializeButtons(imageIndex, index) {
+        document.getElementById('next-button').value = "Next  (1/"+imageIndex.length+")";
 
-    
         document.getElementById('save-button').addEventListener('click', function() {
+          var canvas = document.getElementById('label');
+          var finishData = boundaryEnabled(canvas.width, canvas.height);
 
-          var finishData = boundaryEnabled(img.width, img.height);
-
-          if(checkFinishlabelling(finishData)){
+       //   if(checkFinishlabelling(finishData)){
             var dataURL = saveImage(finishData);
             downloadAsFile(dataURL, 'labeled.png');
-          }
+            if(index < imageIndex.length-1){
+              document.getElementById('next-button').disabled = false;
+            }
+            else{
+              this.value = "Done!";
+              this.disabled = true;
+            }
+     /*     }
           else{
             window.alert("Please finish labelling all segments :)");
-          }
+          }*/
           
+        });
+
+        document.getElementById('next-button').addEventListener('click', function() {
+            var current;
+            initializeImages(imageIndex[++index], function(width, height){});
+            current = index+1;
+            this.value = "Next  ("+current+"/"+imageIndex.length+")";
         });
 
         document.getElementById('undo-button').addEventListener('click', function() {
@@ -796,7 +778,6 @@
              }
         });
       }
-//    }
   </script>
 </body>
 </html>
