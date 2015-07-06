@@ -263,7 +263,7 @@
             if (step < pushArray.length) { pushArray.length = step; }
             data.label = document.getElementById('label').toDataURL();
             data.border = bor_canvas.toDataURL();
-            data.merge = mergeArray.splice();
+            data.merge = mergeArray;
             pushArray.push(data);
 
             if(step > 0)
@@ -748,7 +748,7 @@
                   border_imgData = imgData;
                   bor_canvas = canvas;
               })
-              mergeArray = pushArray[step].merge.splice();
+              mergeArray = pushArray[step].merge;
 
               document.getElementById('redo-button').disabled = false;
               if(step===0)
@@ -772,7 +772,7 @@
                     border_imgData = imgData;
                     bor_canvas = canvas;
                 })
-                mergeArray = pushArray[step].merge.splice();
+                mergeArray = pushArray[step].merge;
                 
                 document.getElementById('undo-button').disabled = false;
                 if(step === pushArray.length-1)
