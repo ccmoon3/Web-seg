@@ -423,7 +423,7 @@
       function isBorder(x, y, width, ImgData){
         var k = y*width + x;
 
-        if(ImgData.data[4*k+0]<50 && ImgData.data[4*k+1]>180 && ImgData.data[4*k+2]<50)
+        if(ImgData.data[4*k+0]<50 && ImgData.data[4*k+1]>150 && ImgData.data[4*k+2]<50)
           return true;
         return false;
       }
@@ -611,11 +611,13 @@
             bluePixels =[],       
             k;
 
+            noBoundary_imgData.data.set(label_imgData.data);
+
             //expand blue
             for (var y =0; y< height; y++){
                for (var x =0; x<width; x++){
                     k = y*width+x;
-                    if(label_imgData.data[4*k+0]<25 && label_imgData.data[4*k+1]<25 && label_imgData.data[4*k+2]>150){
+                    if(label_imgData.data[4*k+0]<50 && label_imgData.data[4*k+1]<50 && label_imgData.data[4*k+2]>150){
                        colorMap[k]=1;
                     }
                     else
@@ -631,7 +633,7 @@
              for (var y =0; y< height; y++){
                 for (var x =0; x<width; x++){
                   k = y*width+x;
-                  if(label_imgData.data[4*k+0]>150 && label_imgData.data[4*k+1]<25 && label_imgData.data[4*k+2]<25){
+                  if(label_imgData.data[4*k+0]>150 && label_imgData.data[4*k+1]<50 && label_imgData.data[4*k+2]<50){
                        colorMap[k]=1;
                   }
                   else
@@ -687,7 +689,7 @@
       function checkFinishlabelling(imgData){
         var count = 0;
         for(var i =0; i<imgData.data.length/4; i=i+4){
-          if((imgData.data[4*i+0]===0 && imgData.data[4*i+1]===0 && imgData.data[4*i+2]>180)||(imgData.data[4*i+0]>180 && imgData.data[4*i+1]===0 && imgData.data[4*i+2]===0)){}
+          if((imgData.data[4*i+0]<50 && imgData.data[4*i+1]<50 && imgData.data[4*i+2]>150)||(imgData.data[4*i+0]>150 && imgData.data[4*i+1]<50 && imgData.data[4*i+2]<50)){}
           else{
             count++;
           }
