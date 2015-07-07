@@ -1,5 +1,7 @@
 <html>
 <head>
+<script src="dist/sweetalert.min.js"></script> 
+<link rel="stylesheet" type="text/css" href="dist/sweetalert.css">
   <style type="text/css">
     body {
       font-family: Verdana, Arial, sans-serif;
@@ -263,7 +265,7 @@
             if (step < pushArray.length) { pushArray.length = step; }
             data.label = document.getElementById('label').toDataURL();
             data.border = bor_canvas.toDataURL();
-            data.merge = mergeArray;
+            data.merge = mergeArray.slice();
             pushArray.push(data);
 
             if(step > 0)
@@ -446,7 +448,8 @@
 
          for(var i=0; i< width*height;++i)
                 indexMap[i] = 0;
-         
+         console.log(point);
+         console.log(mergeArray);
          for(var i =0; i<point.length;i++){
             k = width*point[i].y + point[i].x;
             mergeSegment.state = false;
@@ -465,8 +468,8 @@
 
             if(mergeSegment.state){
                for(var t=0; t<mergeArray[mergeSegment.no].length; t++){
-                  pixels.push(mergeArray[mergeSegment.no][t]);
-                  indexMap[mergeArray[mergeSegment.no][t]] = 1;
+                 pixels.push(mergeArray[mergeSegment.no][t]);
+                 indexMap[mergeArray[mergeSegment.no][t]] = 1;
                }
                mergeArray.splice(mergeSegment.no, 1);
             }
@@ -475,10 +478,11 @@
             }
          }
 
-         updateSegments(pixels, width, height, indexMap);
+         if(pixels.length>0)
+            updateSegments(pixels, width, height, indexMap);
+
       }
       
-
 
       function updateSegments(pixels, width, height,indexMap){
         switch(modeIndex){
@@ -554,6 +558,15 @@
 
 
       function splitSegement(segPixels){
+        var splitted = true;
+         for(var i = 0; i < segPixels.length; i++){
+             if(Subseg_imgData.data[4*segPixels[i]+0]<50 && Subseg_imgData.data[4*segPixels[i]+1]>150 && Subseg_imgData.data[4*segPixels[i]+2]<50){
+               splitted = false;
+               break;
+             }   
+         }
+
+         if(!splitted){
 
              for(var i = 0; i < segPixels.length; i++){
                  copyPixelColor(Subseg_imgData, label_imgData, segPixels[i]);
@@ -561,6 +574,10 @@
              }  
              context.putImageData(label_imgData,0,0);
              bor_canvas.getContext('2d').putImageData(border_imgData,0,0);    
+         }
+         else{
+             sweetAlert("Can not split","This segment has already been splitted.");
+         }
 
       }
 
@@ -708,19 +725,21 @@
           var canvas = document.getElementById('label');
           var finishData = boundaryEnabled(canvas.width, canvas.height);
 
-       //   if(checkFinishlabelling(finishData)){
+     //     if(checkFinishlabelling(finishData)){
             var dataURL = saveImage(finishData);
-            downloadAsFile(dataURL, 'labeled.png');
+     //       downloadAsFile(dataURL, 'labeled.png');
             if(index < imageIndex.length-1){
               document.getElementById('next-button').disabled = false;
+              sweetAlert("Saved","Click next to label another image.","success");
             }
             else{
               this.value = "Done!";
               this.disabled = true;
+              sweetAlert("Finished!","Thanks for your help :)","success");
             }
-     /*     }
+    /*      }
           else{
-            window.alert("Please finish labelling all segments :)");
+            sweetAlert("Sorry","Please label all segments before saving.","error");
           }*/
           
         });
@@ -748,7 +767,7 @@
                   border_imgData = imgData;
                   bor_canvas = canvas;
               })
-              mergeArray = pushArray[step].merge;
+              mergeArray = pushArray[step].merge.slice();
 
               document.getElementById('redo-button').disabled = false;
               if(step===0)
@@ -772,7 +791,7 @@
                     border_imgData = imgData;
                     bor_canvas = canvas;
                 })
-                mergeArray = pushArray[step].merge;
+                mergeArray = pushArray[step].merge.slice();
                 
                 document.getElementById('undo-button').disabled = false;
                 if(step === pushArray.length-1)
