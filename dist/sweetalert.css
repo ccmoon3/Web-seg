@@ -19,8 +19,8 @@ body.stop-scrolling {
 .sweet-alert {
   background-color: white;
   font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  width: 280px;
-  padding: 6px 0 10px 0;
+  min-width: 230px;
+  padding: 8px 25px 13px 25px;
   border-radius: 5px;
   text-align: center;
   position: fixed;
@@ -31,7 +31,7 @@ body.stop-scrolling {
   overflow: hidden;
   display: none;
   z-index: 99999; }
-  @media all and (max-width: 440px) {
+  @media all and (max-width: 600px) {
     .sweet-alert {
       width: auto;
       margin-left: 0;
@@ -45,7 +45,7 @@ body.stop-scrolling {
     font-weight: 550;
     text-transform: none;
     position: relative;
-    line-height: 10px !important;
+    line-height: 100% !important;
     padding: 0;
     display: block; }
   .sweet-alert p {
@@ -58,7 +58,7 @@ body.stop-scrolling {
     float: none;
     margin: 0;
     padding: 0;
-    line-height: normal; }
+    line-height: 170% !important; }
   .sweet-alert fieldset {
     border: none;
   -webkit-padding-before: 0.22em !important;
@@ -167,9 +167,10 @@ body.stop-scrolling {
     font-size: 12px;
     font-weight: 400;
     -webkit-border-radius: 4px;
+    min-width: 95px;
     border-radius: 5px;
-    padding: 5px 32px;
-    margin: 5px 5px 0 5px;
+    padding: 6px 19px;
+    margin: 5px 10px 0 10px;
     cursor: pointer; }
     .sweet-alert button:focus {
       outline: none;
@@ -179,7 +180,8 @@ body.stop-scrolling {
     .sweet-alert button:active {
       background-color: #81ccee; }
     .sweet-alert button.cancel {
-      background-color: #D0D0D0; }
+      background-color: #D0D0D0; 
+      min-width: 150px !important;}
       .sweet-alert button.cancel:hover {
         background-color: #c8c8c8; }
       .sweet-alert button.cancel:active {
@@ -228,23 +230,23 @@ body.stop-scrolling {
       border-color: #F8BB86; }
       .sweet-alert .sa-icon.sa-warning .sa-body {
         position: absolute;
-        width: 5px;
-        height: 47px;
+        width: 4px;
+        height: 22px;
         left: 50%;
-        top: 10px;
+        top: 5px;
         -webkit-border-radius: 2px;
         border-radius: 2px;
         margin-left: -2px;
         background-color: #F8BB86; }
       .sweet-alert .sa-icon.sa-warning .sa-dot {
         position: absolute;
-        width: 7px;
-        height: 7px;
+        width: 6px;
+        height: 5px;
         -webkit-border-radius: 50%;
         border-radius: 50%;
         margin-left: -3px;
         left: 50%;
-        bottom: 10px;
+        bottom: 5px;
         background-color: #F8BB86; }
     .sweet-alert .sa-icon.sa-info {
       border-color: #C9DAE1; }

@@ -1,152 +1,4 @@
-<html>
-<meta charset="UTF-8">
-<head>
-<script src="dist/sweetalert.min.js"></script> 
-<link href="dist/bootstrap.css" rel="stylesheet">
-<script src="dist/jquery-1.11.3.min.js"></script> 
-<link rel="stylesheet" type="text/css" href="dist/sweetalert.css">
-  <style type="text/css">
-    body {
-      font-family: Verdana, Arial, sans-serif;
-    }
-
-    .legend {
-      display: inline-block;
-    }
-    .legend-item {
-      display: inline-block;
-      padding: .5em 0em;
-      min-width: 7em;
-      cursor: pointer;
-      color: rgb(111, 115, 136);
-      font-size:85%;
-    }
-    .item:hover,
-    .item-selected {
-      background: rgb(215, 216, 222) !important;
-    }
-
-    .mode {
-      display: inline-block;
-    }
-    .mode-item {
-      display: inline-block;
-      padding: .5em .5em;
-      border-top: #6F7388 solid 2px;
-      border-radius: 4px;
-      min-width: 7em;
-      cursor: pointer;
-      border-bottom: none;
-      font-size: 100% ;
-      background: rgb(183, 185, 196);
-      color: rgb(75, 80, 106);
-    }
-
-    .view-item{
-      display: inline-block;
-      padding: .4em .4em;
-      cursor: pointer;
-      color: rgb(111, 115, 136);
-      font-size:85%;
-    }
-
-    .legend-color-box {
-      display: inline-block;
-      border-radius: 3px;
-      width: .9em;
-      height: .9em;
-      vertical-align: middle;
-      margin-right: .4em;
-      margin-left: .1em;
-    }
-
-    .my-button{
-      padding: .5em .5em;
-      background: rgb(183, 185, 196);
-      border-radius:6px;
-      cursor:pointer;
-      min-width: 4em;
-      font-size: 88%;
-      color: rgb(75, 113, 151);
-      float:left;
-    }
-    .my-button:hover{
-      background-color: rgb(215, 216, 222);
-    }
-    .my-button:disabled{
-      color: rgb(147, 150, 166);
-    }
-    p{
-      margin-bottom: 5px;
-      line-height: 150%;
-    }
-
-</style>
-</head>
-<body>
-  <div style="width:1100px;height:600px;margin-top:20px;margin-left:30px;">
-    <canvas id="label" ></canvas>
-    <div style="display:inline-block;vertical-align:top;padding:0 1em;">
-    <div class = "row" style="width:370px;">
-    <div style="width:130px;float:left;margin-left:10px;">
-      <div id="mode" class="mode">
-        <li id="split-mode" class="mode-item item">Split</li>
-    <!--    <li class="mode-item item">Merge</li><br> -->
-        <li id="label-mode" class="mode-item">Labels<br> 
-            <div id="legend" class="legend"></div>
-        </li>
-      </div>
-      <br>     
-      <div id="do-button" class="mode">
-      <button id="undo-button" type="button" class="my-button" >Undo</button>
-      <button id="redo-button" type="button" class="my-button" >Redo</button>
-      </div>
-      <br><br>
-      <div id="view">
-      <li class="mode-item">View<br>
-        <input type="checkbox" id="boundary-button" checked onclick='return handleClick(this);'><span class="view-item">Boundary</span><br>
-        <input type="checkbox" id="fill-button" checked onclick='return handleClick(this);'><span class="view-item">Fill</span>
-      </li>
-      </div><br>
-      <div class="mode">
-      <input id="save-button" type="button" value="Save" class="my-button" style="width:8em;"/><br>
-      <input id="next-button" type="button" value="Next" class="my-button" style="width:8em;"/>
-      </div>
-    </div>
-    <div style="width:230px;float:left;text-align:justify;">   
-           <h5>Instruction:</h5>
-           <li><p style="font-size:13.5px;">You need to label all segments as Sky(blue) or Cloud(red). With some segments hard to define, you can split them into smaller segements to further label. </p></li>
-           <li><p style="font-size:13.5px;">There are some segments already labelled by us; but if it is wrong labelled in your sense, you should correct it.</p></li>
-           <li><p style="font-size:13.5px;">You can use undo/redo to control your steps, and view image with checked/unchecked Boundary and Fill to gain sense.</p></li>
-           <li><p style="font-size:13.5px;">Only after saving the current image successfully can you go to the next one. You are allowed to leave a few segments unlablled if you are extremely uncertained.</p></li>
-    </div>
-    </div>
-         
-      <div class="row" style="width:380px;">
-            <h5 style="margin-left:15px; margin-top:30px;">Our definitions to label segments:</h5>
-             <div class="col-md-3 col-sm-6" style="text-align:center;">           
-                 <img src="guide/cloud1.png" alt="" style="width:80px;height:80px"/>
-                 <p style="font-size:13px;text-align:center;">Cloud</p>
-             </div>
-            <div class="col-md-3 col-sm-6" style="text-align:center;">           
-                 <img src="guide/cloud3.png" alt="" style="width:80px;height:80px"/>
-                 <p style="font-size:13px;text-align:center;">Cloud</p>
-             </div>
-             <div class="col-md-3 col-sm-6" style="text-align:center;">
-                 <img src="guide/sky1.png" alt="" style="width:80px;height:80px"/>
-                 <p style="font-size:13px;text-align:center;">Sky</p>
-             </div>
-             <div class="col-md-3 col-sm-6" style="text-align:center;">
-                 <img src="guide/sky2.png" alt="" style="width:80px;height:80px"/>
-                 <p style="font-size:13px;text-align:center;">Sky</p>
-             </div>
-      </div>
-
-    </div>
-  </div>
-
-  </div>
-  <script type="text/javascript">
+<script type="text/javascript">
 //test_o: original image
 //test_b: only with border
 //test_l: border && part labels
@@ -158,8 +10,8 @@
          window.pushArray, window.step;
          window.mergeArray;
 
-         window.checkIndex=[], window.context, window.bor_canvas;
-         window.label_imgData, window.Subseg_imgData, window.ori_imgData, window.border_imgData, window.Corlabel_imgData;
+         window.context, window.bor_canvas;
+         window.label_imgData, window.Subseg_imgData, window.ori_imgData, window.border_imgData;
 
 
          var labels =[
@@ -168,7 +20,7 @@
                   {  id:'label-clearlabel', name: 'Clear label', color: [255, 255, 255]},
                 ];
          initializeMode(labels);
-         //random select 10 images for each users from total 20 images.
+         //random select 2 images for each users from total 3 images.
          var imageIndex = randomIndex(2, 3);
          var mid = getParameterByName("MID");
 
@@ -178,7 +30,7 @@
 
          initializeImages(imageIndex[0], function(width, height){
             initializeContainListener(width, height);
-            initializeButtons(imageIndex, 0, mid); 
+            initializeButtons(imageIndex, 0, mid);
          });
 
     }
@@ -190,41 +42,41 @@
            for(var i = 0; i < len; i++){
              dataForServer.push(window.sessionStorage.getItem(window.sessionStorage.key(0)));
              window.sessionStorage.removeItem(window.sessionStorage.key(0));
-           } 
-    //       console.log(dataForServer);
-           sendStorageToServer(dataForServer, mid, 0);   
-        } 
+           }
+           console.log(dataForServer);
+           sendStorageToServer(dataForServer, mid, 0);
+        }
     };
 
     function sendStorageToServer(rec, mid, count){
-       
+
              $.ajax({
                 type: "POST",
                 url: "./record.php",
-                data: { 
+                data: {
                   'mid': mid,
                   'record': rec,
                 },
                 success: function(e){
-                   console.log("record success");
+                   console.log("record success:"+e);
                 },
                 error: function(e) {
                     if(count<5){
-                      sendStorageToServer(rec, mid, ++count);     
+                      sendStorageToServer(rec, mid, ++count);
                     }
                     else{
-                       console.log('record-Error after 5 times try'); 
-                       console.log(e); 
-                    }    
+                       console.log('record-Error after 5 times try');
+                       console.log(e);
+                    }
                  }
-              });   
+              });
     }
 
 
     function randomIndex(n, total){
         var arr = [];
         while(arr.length < n){
-           var randomNumber = Math.floor((Math.random()*total)+1);
+           var randomNumber = Math.floor(Math.random()*total);
            var found = false;
            for(var i=0;i<arr.length;i++){
               if(arr[i]==randomNumber){
@@ -245,7 +97,6 @@
 
          pushArray = new Array(), step = -1;
          mergeArray = new Array();
-         checkIndex=[];
 
          img.onload = function() {
                 var canvas = document.getElementById('label');
@@ -253,29 +104,23 @@
                 canvas.height = img.height;
                 context = canvas.getContext('2d');
                 context.drawImage(img, 0, 0);
-                label_imgData = context.getImageData(0, 0, img.width, img.height);       
+                label_imgData = context.getImageData(0, 0, img.width, img.height);
                 context.putImageData(label_imgData,0,0);
 
-                loadImage( 'input/' + i+'/'+'l.png',function(imgData, canvas){
-                  Corlabel_imgData = imgData;
-                  checkIndex = compareImage(label_imgData, Corlabel_imgData, -1);
-                }); 
-                loadImage( 'input/' + i+'/'+'s.png',function(imgData, canvas){
+                loadImage( i+'/'+'test_s.png',function(imgData, canvas){
                   Subseg_imgData = imgData;
-                }); 
-                loadImage( 'input/' + i+'/'+'o.png',function(imgData, canvas){
+                });
+                loadImage( i+'/'+'test_o.png',function(imgData, canvas){
                   ori_imgData = imgData;
-                }); 
-                loadImage( 'input/' + i+'/'+'b.png',function(imgData, canvas){
+                });
+                loadImage( i+'/'+'test_b.png',function(imgData, canvas){
                   border_imgData = imgData;
                   bor_canvas = canvas;
                   store();
-                }); 
-                
+                });
                 callback(img.width, img.height);
          }
-         img.src = 'input/' + i+'/'+'w.png';
-
+         img.src =  i+'/'+'test_l.png';
       }
 
       function localStore(time, domID, op){
@@ -338,21 +183,21 @@
          }
         // currenIndex = label blue
          var currentIndex = 2;
-         document.getElementsByClassName('item')[currentIndex].click();       
+         document.getElementsByClassName('item')[currentIndex].click();
       }
-         
-       function loadImage(url, callback) {     
-            var img = new Image();    
+
+       function loadImage(url, callback) {
+            var img = new Image();
             img.onload = function(){
                 var canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
                 var context = canvas.getContext('2d');
                 context.drawImage(img, 0, 0);
-                var imgData = context.getImageData(0, 0, img.width, img.height);  
+                var imgData = context.getImageData(0, 0, img.width, img.height);
                 callback(imgData, canvas);
             }
-            img.src = url; 
+            img.src = url;
         }
 
         function store() {
@@ -385,15 +230,15 @@
             //     route.push(preHit);
               }
           }, false);
-          
+
           container.addEventListener('mousemove', function(event) {
             if(modeIndex===1 && mousedown){
               var hit = getClickPosition(event, this);
               route.push(hit);
-              preHit = hit;          
-             } 
+              preHit = hit;
+             }
           }, false);
-        
+
           container.addEventListener('mouseup', function(event) {
              var hit = getClickPosition(event, this),
                  points = [];
@@ -416,7 +261,7 @@
              }
 
              mousedown = false;
-             
+
           }, false);
       }
 
@@ -440,7 +285,7 @@
 
       function dilateK(k, width, height, indexMap){
          var dilatePixels = [];
-         
+
          manhattanDilate(width, height, indexMap);
 
          for (var y=0; y<height; y++){
@@ -457,7 +302,7 @@
                 }
               }
           }
-          
+
           return dilatePixels;
       }
 
@@ -504,7 +349,7 @@
                     if (x+1 < width) indexMap[y*width+x] = Math.max(indexMap[y*width+x], indexMap[y*width+x+1]-1);
               }
            }
-     }     
+     }
 
 
       function erosionK(dilatePixels, pixels, ng_k, width, height, indexMap, enableBorder){
@@ -522,7 +367,7 @@
             if(indexMap[dilatePixels[i]] < ng_k){
               pixels.push(dilatePixels[i]);
             }
-          }       
+          }
         }
 
       }
@@ -542,11 +387,11 @@
          return mouse;
 
       //    consolze.log('Hit****  X:'+x+';'+'Y:'+y);
-      };     
+      };
 
       //indexMap: pixel index = true, if this pixel is added into pixels Array
       function getSegmentPixels(point, width, height){
-         var pixels = [], 
+         var pixels = [],
              k,
              mergeSegment = {state:'', no:''};
          var indexMap = new Array(width*height);
@@ -577,8 +422,7 @@
                mergeArray.splice(mergeSegment.no, 1);
             }
             else{
-        //      getPixels(pixels, point[i].x, point[i].y, label_imgData, width, height, indexMap);
-                getPixels(pixels, point[i].x, point[i].y, border_imgData, width, height, indexMap);
+              getPixels(pixels, point[i].x, point[i].y, label_imgData, width, height, indexMap);
             }
          }
 
@@ -586,7 +430,7 @@
             updateSegments(pixels, width, height, indexMap);
 
       }
-      
+
 
       function updateSegments(pixels, width, height,indexMap){
         switch(modeIndex){
@@ -595,16 +439,16 @@
              splitSegement(pixels);
              localStore(new Date().getTime(), "split-mode",pixels);
              break;
-           //merge  
+           //merge
            //k and ad can be further adjusted
            case 1:
              var k=3;
              var dilatePixels = dilateK(k, width, height, indexMap);
              erosionK(dilatePixels, pixels, -k, width, height, indexMap, false);
              mergeArray.push(pixels);
-             mergeSegment(pixels); 
+             mergeSegment(pixels);
              break;
-           //label  
+           //label
            case 2:
              mergeArray.push(pixels);
              labelSegment(pixels);
@@ -644,35 +488,7 @@
                    var imPartData = ctx.getImageData(0, 0, cvs.width, cvs.height);
                    imPartData.data.set(imageData.data);
 
-                  ctx.putImageData(imPartData,0,0);     
-     }
-
-     function compareImage(imgData1, imgData2, pool){
-
-        if(pool==-1){
-          var k, checkIndex=[];
-          for (var y =0; y< imgData1.height; y++){
-             for (var x =0; x<imgData1.width; x++){
-               k = y*imgData1.width+x;
-               if(imgData1.data[4*k+0]-imgData2.data[4*k+0]<40 && imgData1.data[4*k+1]-imgData2.data[4*k+1]<40 && imgData1.data[4*k+2]-imgData2.data[4*k+2]<40 && imgData1.data[4*k+0]-imgData2.data[4*k+0]>-40 && imgData1.data[4*k+1]-imgData2.data[4*k+1]>-40 && imgData1.data[4*k+2]-imgData2.data[4*k+2]>-40){}
-               else{
-                    checkIndex.push(k);
-               }
-             }
-          }
-          return checkIndex;
-        }
-        else{
-          for (var i=0; i<pool.length; i++){
-               k = y*imgData1.width+x;
-               if(imgData1.data[4*pool[i]+0]-imgData2.data[4*pool[i]+0]<40 && imgData1.data[4*pool[i]+1]-imgData2.data[4*pool[i]+1]<40 && imgData1.data[4*pool[i]+2]-imgData2.data[4*pool[i]+2]<40 && imgData1.data[4*pool[i]+0]-imgData2.data[4*pool[i]+0]>-40 && imgData1.data[4*pool[i]+1]-imgData2.data[4*pool[i]+1]>-40 && imgData1.data[4*pool[i]+2]-imgData2.data[4*pool[i]+2]>-40){}
-               else{
-                    return false;
-               }
-
-          }
-          return true;
-        }
+                  ctx.putImageData(imPartData,0,0);
      }
 
       function saveImage(imgData){
@@ -683,11 +499,11 @@
                 var ctx = cvs.getContext('2d');
                 var imData = ctx.getImageData(0, 0, cvs.width, cvs.height);
                 imData.data.set(imgData.data);
-                ctx.putImageData(imData,0,0); 
+                ctx.putImageData(imData,0,0);
 
                 var dataURL= cvs.toDataURL("image/png");
 
-                return dataURL;    
+                return dataURL;
       }
 
 
@@ -697,7 +513,7 @@
              if(Subseg_imgData.data[4*segPixels[i]+0]<50 && Subseg_imgData.data[4*segPixels[i]+1]>150 && Subseg_imgData.data[4*segPixels[i]+2]<50){
                splitted = false;
                break;
-             }   
+             }
          }
 
          if(!splitted){
@@ -705,9 +521,9 @@
              for(var i = 0; i < segPixels.length; i++){
                  copyPixelColor(Subseg_imgData, label_imgData, segPixels[i]);
                  copyPixelColor(Subseg_imgData, border_imgData, segPixels[i]);
-             }  
+             }
              context.putImageData(label_imgData,0,0);
-             bor_canvas.getContext('2d').putImageData(border_imgData,0,0);    
+             bor_canvas.getContext('2d').putImageData(border_imgData,0,0);
          }
          else{
              sweetAlert("Can not split","This segment has already been splitted.");
@@ -720,9 +536,9 @@
             for(var i=0; i<segPixels.length; i++){
                  copyPixelColor(ori_imgData, label_imgData, segPixels[i]);
                  copyPixelColor(ori_imgData, border_imgData, segPixels[i]);
-            }   
-            context.putImageData(label_imgData,0,0);  
-            bor_canvas.getContext('2d').putImageData(border_imgData,0,0);    
+            }
+            context.putImageData(label_imgData,0,0);
+            bor_canvas.getContext('2d').putImageData(border_imgData,0,0);
       }
 
       function labelSegment(segPixels){
@@ -730,16 +546,16 @@
          if(labelColor.name =='Clear label'){
             for(var i=0; i<segPixels.length; i++){
                  copyPixelColor(ori_imgData, label_imgData, segPixels[i]);
-            }         
+            }
          }
          else{
              for(var i = 0; i < segPixels.length; i++){
                  setPixelLabelColor(labelColor.color, label_imgData, segPixels[i]);
-             }   
+             }
          }
-         context.putImageData(label_imgData,0,0); 
+         context.putImageData(label_imgData,0,0);
       }
-      
+
 
       function copyPixelColor(copyData, pasteData, k){
         pasteData.data[ 4*k+0] = copyData.data[4*k+0];
@@ -756,10 +572,10 @@
       }
 
       function boundaryEnabled(width, height){
-        var colorMap = new Array(width * height), 
+        var colorMap = new Array(width * height),
             noBoundary_imgData = context.getImageData(0, 0, width, height),
             redPixels =[],
-            bluePixels =[],       
+            bluePixels =[],
             k;
 
             noBoundary_imgData.data.set(label_imgData.data);
@@ -779,7 +595,7 @@
 
              for (var i=0;i<bluePixels.length;i++)
                 setPixelLabelColor([0,0,194], noBoundary_imgData, bluePixels[i]);
-  
+
              //expand red
              for (var y =0; y< height; y++){
                 for (var x =0; x<width; x++){
@@ -791,7 +607,7 @@
                        colorMap[k]=0;
                   }
              }
-             erosionK(dilateK(3, width, height, colorMap), redPixels, -1, width, height, colorMap, true); 
+             erosionK(dilateK(3, width, height, colorMap), redPixels, -1, width, height, colorMap, true);
 
              for (var i=0;i<redPixels.length;i++)
                 setPixelLabelColor([194,0,0], noBoundary_imgData, redPixels[i]);
@@ -807,9 +623,9 @@
                 }
               }
           return noBoundary_imgData;
-            
+
       }
- 
+
 
       function handleClick(e){
             var boundaryOn = document.getElementById('boundary-button').checked,
@@ -822,7 +638,7 @@
               context.putImageData(border_imgData,0,0);
             }
             else if(fillOn){//boundaryOn = false
-              context.putImageData(boundaryEnabled(canvas.width, canvas.height),0,0); 
+              context.putImageData(boundaryEnabled(canvas.width, canvas.height),0,0);
             }
             else{// false, false
               context.putImageData(ori_imgData, 0, 0);
@@ -864,19 +680,17 @@
             $.ajax({
                 type: "POST",
                 url: "./save.php",
-                data: { 
+                data: {
                   'workerid': mid,
-                  'imgInd': imageIndex[index],
-                  'index': index,
+                  'index': imageIndex[index],
                   'length': imageIndex.length,
                   'image': dataURL
                 },
                 success:function(data) {
-                   console.log(data);
                    var result = JSON.parse(data);
-                   console.log(result);
-                   console.log(result.img && result.csv);
-                   if(result.img && result.csv){
+                   console.log(data);
+
+                   if(result.status){
                       //not the end
                       if(index < imageIndex.length-1){
                          document.getElementById('next-button').disabled = false;
@@ -884,36 +698,31 @@
                          localStore(new Date().getTime(),'save-button', "success");
                       }
                       //the end
-                      else {
+                      else{
                          document.getElementById('save-button').value = "Done!";
                          document.getElementById('save-button').disabled = true;
-                         sweetAlert({   
-                                      title: "<small style='color:#949494'>Validation Code: </small><span style='color:#F8BB86'>"+result.token+"</span>",     
-                                      text: "<p style='text-align:left !important'><span style='font-weight:bold;font-style:italic;'>Thanks so much for participating!</span><br>To receive your payment, please be sure to first copy this  <span style='color:#85C5E6'>20-digit validation code</span> <br>back to MTurk code box, and then click <span style='color:#85C5E6'>OK</span> to close this window.<p>", 
-                                      html: true 
-                                    },function(){
-                                      setTimeout(function(){
-                                           window.close();
-                                      },500);                              
-                                    });
+                         sweetAlert({
+                                      title: "<small style='color:#949494'>Validation Code: </small><span style='color:#F8BB86'>"+result.token+"</span>",
+                                      text: "<p style='text-align:left !important'><span style='font-weight:bold;font-style:italic;'>Thanks for participating!</span><br>To receive your payment, enter this validation code, and then click <span style='color:#85C5E6'>Submit</span>.<p>",
+                                      html: true });
                          localStore(new Date().getTime(), 'save-button', "success-end");
                          retrieveSessionStorage(mid);
                          clearInterval(sesst);
                       }
                     }
                     else{
-                        console.log('failed');                
+                        console.log('failed');
                         sweetAlert("Failed..","Please check your inernet connection.","error");
                         localStore(new Date().getTime(), 'save-button', "fail");
                     }
                  },
                  error: function(e) {
-                    console.log('Error'); 
-                    console.log(e);           
+                    console.log('Error');
+                    console.log(e);
                     sweetAlert("Error..","Internal server error, please try again.","error");
                     localStore(new Date().getTime(), 'save-button', "fail");
                  }
-              });        
+              });
       }
 
 
@@ -931,29 +740,28 @@
         document.getElementById('save-button').addEventListener('click', function() {
           var canvas = document.getElementById('label');
           var finishData = boundaryEnabled(canvas.width, canvas.height);
-          var valid = compareImage(finishData, Corlabel_imgData, checkIndex);
-          localStore(new Date().getTime(), "check-result-valid", valid);
-        if(valid){
-          if(checkFinishlabelling(finishData, 30)){
+
+   //       if(checkFinishlabelling(finishData, 30)){
              localStore(new Date().getTime(), "save-button-finish", true);
              savePost(imageIndex, index, finishData, mid);
-           }
+             localStore(new Date().getTime(), "save-button", false);
+  /*        }
           else{
-            localStore(new Date().getTime(), "save-button-finish", false);
-            sweetAlert({   
-              title: "Not yet complete",   
-              text: "Unlabelled segments remains. Do you still want to force saving?",   
-              type: "warning",   
-              showCancelButton: true,   
-              confirmButtonColor: "#DD6B55",   
-              confirmButtonText: "Yes, save it anyway",   
-              cancelButtonText: "No, back to label",   
-              closeOnConfirm: false}, 
-              function(isConfirm){   
-                if (isConfirm) {     
+            localStore(new Date().getTime(), "save-button-finish", "no");
+            sweetAlert({
+              title: "Not yet complete",
+              text: "Unlabelled segments remains. Do you still want to force saving?",
+              type: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#DD6B55",
+              confirmButtonText: "Yes, save it anyway",
+              cancelButtonText: "No, back to label",
+              closeOnConfirm: false},
+              function(isConfirm){
+                if (isConfirm) {
                   localStore(new Date().getTime(), "save-button-continue", true);
                   if(checkFinishlabelling(finishData,4000)){
-                     savePost(imageIndex, index, finishData, mid); 
+                     savePost(imageIndex, index, finishData, mid);
                      localStore(new Date().getTime(), "save-button-continue", "success");
                   }
                   else{
@@ -965,16 +773,8 @@
                   localStore(new Date().getTime(), "save-button-continue", false);
                 }
               });
-          }
-        }
-        else{
-                sweetAlert({   
-                title: "Low-quality Work",   
-                text: "<p style='text-align:left !important'>Your work on this image doesn't pass our evaluation.</p><p style='text-align:left !important'>Please revise your labelling more seriously!</p>",   
-                type: "error",   
-                html: true});
-        }
-          
+          }*/
+
         });
 
         document.getElementById('next-button').addEventListener('click', function() {
@@ -994,8 +794,8 @@
 
               var undoLable = new Image();
               undoLable.onload = function(){
-                context.drawImage(undoLable, 0, 0); 
-                label_imgData = context.getImageData(0, 0, undoLable.width, undoLable.height);              
+                context.drawImage(undoLable, 0, 0);
+                label_imgData = context.getImageData(0, 0, undoLable.width, undoLable.height);
               }
               undoLable.src = pushArray[step].label;
 
@@ -1018,8 +818,8 @@
                 step++;
 
                 var redoLable = new Image();
-                redoLable.onload = function(){                
-                  context.drawImage(redoLable, 0, 0); 
+                redoLable.onload = function(){
+                  context.drawImage(redoLable, 0, 0);
                   label_imgData = context.getImageData(0, 0, redoLable.width, redoLable.height);
                 }
                 redoLable.src = pushArray[step].label;
@@ -1029,7 +829,7 @@
                     bor_canvas = canvas;
                 })
                 mergeArray = pushArray[step].merge.slice();
-                
+
                 document.getElementById('undo-button').disabled = false;
                 if(step === pushArray.length-1)
                   document.getElementById('redo-button').disabled = true;
@@ -1037,5 +837,4 @@
         });
       }
   </script>
-</body>
-</html>
+

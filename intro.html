@@ -1,0 +1,100 @@
+<html>
+<meta charset="UTF-8">
+<head>
+<script src="dist/jquery-1.11.3.min.js"></script> 
+<link href="dist/bootstrap.css" rel="stylesheet">
+<style type="text/css">
+.hero-spacer {
+    display: table;
+    position: relative;
+    width: 100%;
+    height: 70%;
+    background: url(./guide/bg.jpg) no-repeat center center;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+.hero-feature {
+    margin-bottom: 30px;
+}
+.services {
+  padding: 20px 0 0 0;
+}
+.btn-dark {
+  border-radius: 0;
+  color: #fff;
+  background-color: rgba(0,0,0,0.4);
+}
+.section-heading-spacer {
+  float: left;
+  width: 200px;
+  border-top: 3px solid #e7e7e7;
+}
+.section-heading {
+  margin-bottom: 10px;
+  line-height: 0.8 !important;
+}
+
+</style>
+</head>
+<body>
+
+	<div class="container">
+
+        <header class="jumbotron hero-spacer">
+            <h1>A Warm Welcome &#9786;</h1>
+            <p>Thank you for trusting our site to join our experiment !<br>The payment for this valid participation is <strong>0.7 cents</strong>. You will get paid within a day if assignment is on approval. However, rejection will occur if you muddle through, so please do take this experiment seriously.<br>There will be ten images for you to label. When you are finished, you will be given a code to paste into MTurk code box for submission. <br> Before starting, please ensure your browser size is larger than <strong>1100px * 700px</strong> to see all contents.<p>
+            <p><a id="go-button" class="btn btn-dark btn-lg disabled">Click to Start Now!</a>
+            </p>
+        </header>
+    <section id="services" class="services bg-primary">
+        <div class="container-section">
+        	<div class="row">
+                <div class="col-lg-4 col-sm-5">
+                    <hr class="section-heading-spacer">
+                    <div class="clearfix"></div>
+                    <h2 class="section-heading">Definitions<br>to Label Segments</h2>
+                    <p class="lead">You should follow</p>
+                </div>
+                <div class="col-lg-8 col-sm-5">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6" style="text-align:center;padding:15px;">           
+                               <img src="guide/cloud1.png" alt="" style="width:110px;height:110px;"/>
+                                <h4>This is cloud.</h4>
+                        </div>
+                        <div class="col-md-3 col-sm-6" style="text-align:center;padding:15px;">
+                            	<img src="guide/cloud3.png" alt="" style="width:110px;height:110px;"/>
+                                <h4>This is cloud.</h4>
+                        </div>
+                        <div class="col-md-3 col-sm-6" style="text-align:center;padding:15px;">
+                               	<img src="guide/sky1.png" alt="" style="width:110px;height:110px;"/>
+                                <h4>This is sky.</h4>
+                        </div>
+                        <div class="col-md-3 col-sm-6" style="text-align:center;padding:15px;">
+                               	<img src="guide/sky2.png" alt="" style="width:110px;height:110px;"/>
+                                <h4>This is sky.</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.container -->
+    </section>
+  </div>
+<script type="text/javascript">
+  window.onload = function(){
+  	 var mid = getParameterByName("MID");
+  	 document.getElementById("go-button").setAttribute("href", "index.html?MID="+mid);
+  	 document.getElementById('go-button').classList.remove('disabled');
+  }
+
+  function getParameterByName(name) {
+         name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+         var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+         results = regex.exec(location.search);
+         return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
+</script>
+</body>
+</html>
